@@ -10,11 +10,13 @@ from PySide6.QtWidgets import (
     QToolButton,
     QStyle,
     QMenuBar,
-    QMenu, QBoxLayout
+    QMenu,
+    QBoxLayout,
 )
 from PySide6.QtCore import Qt, QEvent, QObject
 from PySide6.QtGui import QMouseEvent, QPixmap, QPalette, QAction, QColor
 from typing import Optional
+import re
 
 
 class UtilityMixIn:
@@ -44,8 +46,8 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(central_widget)
 
         central_widget.setStyleSheet("background-color: blue")
-
         title_bar = CustomTitleBar(root=self)
+
         label1 = QLabel("label 1")
         label1.setStyleSheet("background-color:red")
         central_widget_layout.addWidget(label1)
@@ -79,6 +81,10 @@ class MainWindow(QMainWindow):
 class MainWindowWidget(QWidget):
     def __init__(self):
         super().__init__()
+        self.setAutoFillBackground(True)
+        p = self.palette()
+        p.setColor(self.backgroundRole(), Qt.red)
+        self.setPalette(p)
 
         layout = QHBoxLayout(self)
 
@@ -115,6 +121,7 @@ class MainWindowWidget(QWidget):
 
         title_bar = CustomTitleBar(root=self)
 
+
 class CustomTitleBar(UtilityMixIn, QWidget):
     def __init__(self, root):
         super().__init__()
@@ -134,7 +141,6 @@ class CustomTitleBar(UtilityMixIn, QWidget):
 
         """Get all of root's content"""
         root_central_widget = self.get_root_content()
-        # root_central_widget = root.centralWidget()
         root_central_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         """Create container widget to hold all of title bar content"""
@@ -186,24 +192,20 @@ class CustomTitleBar(UtilityMixIn, QWidget):
         master_layout.addWidget(root_central_widget)
         if isinstance(root, QMainWindow):
             root.setCentralWidget(self)
+            body_color = root_central_widget.palette().color(QPalette.Window).name()
+            self.root.centralWidget().setStyleSheet(f"background-color: {body_color}")
         else:
             if not root.layout():
                 root.setLayout(QVBoxLayout())
             root.layout().setDirection(QBoxLayout.TopToBottom)
             root.layout().addWidget(self)
             root.layout().setSpacing(0)
-
-        """"Inherit the bg color of the root (default if no color specified)"""
-        # body_color = root_central_widget.palette().color(QPalette.Window).name()
-        # self.root.centralWidget().setStyleSheet(f"background-color: {body_color}")
-
+            root.layout().setContentsMargins(0, 0, 0, 0)
 
     def get_root_content(self):
         def get_widget_content(source_layout, new_layout):
             while source_layout.count():
-                print("hello")
                 item = source_layout.takeAt(0)
-                print(item)
                 if item.widget():
                     new_layout.addWidget(item.widget())
                 elif item.layout():
@@ -226,7 +228,6 @@ class CustomTitleBar(UtilityMixIn, QWidget):
 
         container_widget = QWidget()
         source_layout = self.root.layout()
-        print(source_layout.count())
         new_layout = type(source_layout)()
         get_widget_content(source_layout=source_layout, new_layout=new_layout)
         container_widget.setLayout(new_layout)
@@ -697,5 +698,6 @@ class TitleMenuBar(QWidget):
 
 app = QApplication()
 root = MainWindowWidget()
+# root = MainWindow()
 root.show()
 app.exec()
