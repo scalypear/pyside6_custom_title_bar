@@ -595,7 +595,7 @@ class TitleText(QLabel):
         )
 
 
-class TitleMenuBar(QWidget):
+class TitleMenuBar(QMenuBar):
     def __init__(
         self,
         parent,
@@ -628,8 +628,7 @@ class TitleMenuBar(QWidget):
         self.parent = parent
 
         # Menu bar
-        layout = QVBoxLayout(self)
-        menu = QMenuBar(self)
+        menu = self
 
         file_menu = QMenu("File", menu)
         file_menu.addAction("Open")
@@ -687,10 +686,6 @@ class TitleMenuBar(QWidget):
                     {menu_bar_dropdown_item_hover_additional_qss}
             }}"""
         )
-
-        layout.addWidget(menu)
-        layout.setContentsMargins(0, 0, 0, 0)
-        self.setLayout(layout)
 
 
 
