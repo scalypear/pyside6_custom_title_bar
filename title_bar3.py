@@ -46,7 +46,6 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(central_widget)
 
         central_widget.setStyleSheet("background-color: blue")
-        title_bar = CustomTitleBar(root=self)
 
         label1 = QLabel("label 1")
         label1.setStyleSheet("background-color:red")
@@ -76,6 +75,8 @@ class MainWindow(QMainWindow):
         menu_3.addAction(menu_3_action_1)
         menu_3.addAction(menu_3_action_2)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+
+        title_bar = CustomTitleBar(root=self)
 
 
 class MainWindowWidget(QWidget):
@@ -123,6 +124,7 @@ class MainWindowWidget(QWidget):
 
 
 class CustomTitleBar(UtilityMixIn, QWidget):
+
     def __init__(self, root):
         super().__init__()
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
@@ -257,58 +259,57 @@ class CustomTitleBar(UtilityMixIn, QWidget):
         event.accept()
 
 
-class TitleBar(UtilityMixIn, QWidget):
-    def __init__(self, root):
-        super().__init__()
-        self.root = root
-        self.setContentsMargins(0, 0, 0, 0)
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
-        # layout.setSpacing(0)
+# class TitleBar(UtilityMixIn, QWidget):
+#     def __init__(self, root):
+#         super().__init__()
+#         self.root = root
+#         self.setContentsMargins(0, 0, 0, 0)
+#         layout = QVBoxLayout(self)
+#         layout.setContentsMargins(0, 0, 0, 0)
 
-        container = QWidget(self)
-        container.setContentsMargins(0, 0, 0, 0)
-        layout.addWidget(container)
+#         container = QWidget(self)
+#         container.setContentsMargins(0, 0, 0, 0)
+#         layout.addWidget(container)
 
-        container_layout = QHBoxLayout(container)
-        container_layout.setContentsMargins(0, 0, 0, 0)
+#         container_layout = QHBoxLayout(container)
+#         container_layout.setContentsMargins(0, 0, 0, 0)
 
-        container_layout.addWidget(
-            TitleBtns(
-                root=root,
-                change_btns_on_hover=True,
-                close_btn_default_img_path="icons/close-btn-default.svg",
-                close_btn_hover_img_path="icons/close-btn-hover.svg",
-                min_btn_default_img_path="icons/min-btn-default.svg",
-                min_btn_hover_img_path="icons/min-btn-hover.svg",
-                max_btn_default_img_path="icons/max-btn-default.svg",
-                max_btn_hover_img_path="icons/max-btn-hover.svg",
-                normal_btn_default_img_path="icons/max-btn-default.svg",
-                normal_btn_hover_img_path="icons/normal-btn-hover.svg",
-                disabled_btn_img_path="icons/disabled-btn.svg",
-            )
-        )
-        container_layout.addWidget(TitleText(title_bar_text_title_text="Window Title"))
+#         # Title bar btns
+#         container_layout.addWidget(
+#             TitleBtns(
+#                 root=root,
+#                 change_btns_on_hover=True,
+#                 close_btn_default_img_path="icons/close-btn-default.svg",
+#                 close_btn_hover_img_path="icons/close-btn-hover.svg",
+#                 min_btn_default_img_path="icons/min-btn-default.svg",
+#                 min_btn_hover_img_path="icons/min-btn-hover.svg",
+#                 max_btn_default_img_path="icons/max-btn-default.svg",
+#                 max_btn_hover_img_path="icons/max-btn-hover.svg",
+#                 normal_btn_default_img_path="icons/max-btn-default.svg",
+#                 normal_btn_hover_img_path="icons/normal-btn-hover.svg",
+#                 disabled_btn_img_path="icons/disabled-btn.svg",
+#             )
+#         )
+#         container_layout.addWidget(TitleText(title_bar_text_title_text="Window Title"))
 
-    def add_menu_bar(self):
-        """WORKS below"""
-        menu_widget = QWidget()
-        menu = QMenuBar(menu_widget)
-        file_menu = QMenu("File", menu)
-        file_menu.addAction("Open")
-        file_menu.addAction("Save")
-        menu.addMenu(file_menu)
-        menu.setNativeMenuBar(False)
-        self.container_layout.addWidget(menu_widget)
+#     def add_menu_bar(self):
+#         """WORKS below"""
+#         menu_widget = QWidget()
+#         menu = QMenuBar(menu_widget)
+#         file_menu = QMenu("File", menu)
+#         file_menu.addAction("Open")
+#         file_menu.addAction("Save")
+#         menu.addMenu(file_menu)
+#         menu.setNativeMenuBar(False)
+#         self.container_layout.addWidget(menu_widget)
 
-        menu_widget.setStyleSheet("padding:0; margin:0; background-color:red;")
-        menu.setStyleSheet("background-color: blue")
+#         menu_widget.setStyleSheet("padding:0; margin:0; background-color:red;")
+#         menu.setStyleSheet("background-color: blue")
 
-        # Style the drop down
-        file_menu.setStyleSheet("padding:0; background-color:pink")
+#         file_menu.setStyleSheet("padding:0; background-color:pink")
 
-        menu_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
-        menu.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+#         menu_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
+#         menu.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
 
 
 class TitleBtns(QWidget):
@@ -606,29 +607,25 @@ class TitleMenuBar(QWidget):
         menu_bar_font_color="#fff",
         menu_bar_font_size="14px",
         menu_bar_additional_qss="",
+
+        menu_bar_item_bg_color="",
         menu_bar_item_additional_qss="",
+        
         menu_bar_item_hover_bg_color="",
         menu_bar_item_hover_additional_qss="",
+
         menu_bar_dropdown_additional_qss="",
         menu_bar_dropdown_font="arial",
         menu_bar_dropdown_item_padding="3px 10px",
-        menu_bar_margin="0px",
+        menu_bar_dropdown_item_bg_color="",
+        menu_bar_dropdown_item_text_color="",
+        menu_bar_dropdown_item_additional_qss="",
+
+        menu_bar_dropdown_item_hover_bg_color="",
+        menu_bar_dropdown_item_hover_additional_qss="",
     ):
         super().__init__()
         self.parent = parent
-
-        # If no bg cols, get some defaults based on root styling
-        # parent_col = parent.root.centralWidget().style().standardPalette().color(parent.root.centralWidget().backgroundRole()).name()
-        # parent_col = parent.root.centralWidget().palette().color(QPalette.Window).name()
-
-        # menu_bar_bg_color = parent_col if menu_bar_bg_color == "" else menu_bar_bg_color
-
-        # menu_bar_item_hover_bg_color = (
-        #     QColor().fromString(parent_col).lighter(150).name()
-        #     if menu_bar_item_hover_bg_color == ""
-        #     else menu_bar_item_hover_bg_color
-        # )
-        # print(parent_col)
 
         # Menu bar
         layout = QVBoxLayout(self)
@@ -657,11 +654,11 @@ class TitleMenuBar(QWidget):
                     color: {menu_bar_font_color};
                     font-size: {menu_bar_font_size};
                     {menu_bar_additional_qss}
-
                 }}
             """
             # Menu bar items
             f"""QMenuBar::item {{
+                    background-color: {menu_bar_item_bg_color};
                     {menu_bar_item_additional_qss}
             }}"""
             # Menu bar items hover
@@ -680,11 +677,14 @@ class TitleMenuBar(QWidget):
             # Sub menu's dropdown's items
             f"""QMenu::item {{
                     padding: {menu_bar_dropdown_item_padding};
-                    background-color: green;
+                    background-color: {menu_bar_dropdown_item_bg_color};
+                    color: {menu_bar_dropdown_item_text_color};
+                    {menu_bar_dropdown_item_additional_qss}
             }}"""
             # Sub menu's dropdown's items hover
             f"""QMenu::item::selected {{
-                    background-color: red;
+                    background-color: {menu_bar_dropdown_item_hover_bg_color};
+                    {menu_bar_dropdown_item_hover_additional_qss}
             }}"""
         )
 
@@ -692,12 +692,10 @@ class TitleMenuBar(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(layout)
 
-    def get_root_bg_col(self):
-        root_pixmap = QPixmap(self.parent)
 
 
 app = QApplication()
-root = MainWindowWidget()
-# root = MainWindow()
+# root = MainWindowWidget()
+root = MainWindow()
 root.show()
 app.exec()
