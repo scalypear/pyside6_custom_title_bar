@@ -259,59 +259,6 @@ class CustomTitleBar(UtilityMixIn, QWidget):
         event.accept()
 
 
-# class TitleBar(UtilityMixIn, QWidget):
-#     def __init__(self, root):
-#         super().__init__()
-#         self.root = root
-#         self.setContentsMargins(0, 0, 0, 0)
-#         layout = QVBoxLayout(self)
-#         layout.setContentsMargins(0, 0, 0, 0)
-
-#         container = QWidget(self)
-#         container.setContentsMargins(0, 0, 0, 0)
-#         layout.addWidget(container)
-
-#         container_layout = QHBoxLayout(container)
-#         container_layout.setContentsMargins(0, 0, 0, 0)
-
-#         # Title bar btns
-#         container_layout.addWidget(
-#             TitleBtns(
-#                 root=root,
-#                 change_btns_on_hover=True,
-#                 close_btn_default_img_path="icons/close-btn-default.svg",
-#                 close_btn_hover_img_path="icons/close-btn-hover.svg",
-#                 min_btn_default_img_path="icons/min-btn-default.svg",
-#                 min_btn_hover_img_path="icons/min-btn-hover.svg",
-#                 max_btn_default_img_path="icons/max-btn-default.svg",
-#                 max_btn_hover_img_path="icons/max-btn-hover.svg",
-#                 normal_btn_default_img_path="icons/max-btn-default.svg",
-#                 normal_btn_hover_img_path="icons/normal-btn-hover.svg",
-#                 disabled_btn_img_path="icons/disabled-btn.svg",
-#             )
-#         )
-#         container_layout.addWidget(TitleText(title_bar_text_title_text="Window Title"))
-
-#     def add_menu_bar(self):
-#         """WORKS below"""
-#         menu_widget = QWidget()
-#         menu = QMenuBar(menu_widget)
-#         file_menu = QMenu("File", menu)
-#         file_menu.addAction("Open")
-#         file_menu.addAction("Save")
-#         menu.addMenu(file_menu)
-#         menu.setNativeMenuBar(False)
-#         self.container_layout.addWidget(menu_widget)
-
-#         menu_widget.setStyleSheet("padding:0; margin:0; background-color:red;")
-#         menu.setStyleSheet("background-color: blue")
-
-#         file_menu.setStyleSheet("padding:0; background-color:pink")
-
-#         menu_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
-#         menu.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-
-
 class TitleBtns(QWidget):
 
     def __init__(
