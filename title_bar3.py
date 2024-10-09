@@ -16,7 +16,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt, QEvent, QObject
 from PySide6.QtGui import QMouseEvent, QPixmap, QPalette, QAction, QColor
 from typing import Optional
-import re
+
 
 
 class UtilityMixIn:
@@ -41,18 +41,18 @@ class MainWindow(QMainWindow):
         super().__init__()
 
         central_widget = QWidget()
-        central_widget_layout = QHBoxLayout()
-        central_widget.setLayout(central_widget_layout)
+        self.central_widget_layout = QHBoxLayout()
+        central_widget.setLayout(self.central_widget_layout)
         self.setCentralWidget(central_widget)
 
         central_widget.setStyleSheet("background-color: blue")
 
         label1 = QLabel("label 1")
         label1.setStyleSheet("background-color:red")
-        central_widget_layout.addWidget(label1)
-        central_widget_layout.addWidget(QLabel("label 2"))
-        central_widget_layout.addWidget(QLabel("label 3"))
-        central_widget_layout.addWidget(QPushButton("label 3"))
+        self.central_widget_layout.addWidget(label1)
+        self.central_widget_layout.addWidget(QLabel("label 2"))
+        self.central_widget_layout.addWidget(QLabel("label 3"))
+        self.central_widget_layout.addWidget(QPushButton("label 3"))
 
         menu = QMenuBar()
         menu_1 = QMenu("1", menu)
@@ -77,6 +77,17 @@ class MainWindow(QMainWindow):
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         title_bar = CustomTitleBar(root=self)
+        test_menu = QMenu("test")
+        hello_action = test_menu.addAction("hello")
+        bye_action = test_menu.addAction("bye")
+        hello_action.triggered.connect(self.hello_action)
+        bye_action.triggered.connect(lambda: print("bye!!"))
+        title_bar.add_menu_item(test_menu)
+
+    def hello_action(self):
+        print("hello action called")
+        self.central_widget_layout.addWidget(QLabel("label 3"))
+
 
 
 class MainWindowWidget(QWidget):
@@ -87,45 +98,40 @@ class MainWindowWidget(QWidget):
         p.setColor(self.backgroundRole(), Qt.red)
         self.setPalette(p)
 
-        layout = QHBoxLayout(self)
+        self.main_layout = QHBoxLayout(self)
 
         self.setStyleSheet("background-color: blue")
 
         label1 = QLabel("label 1")
         label1.setStyleSheet("background-color:red")
-        layout.addWidget(label1)
-        layout.addWidget(QLabel("label 2"))
-        layout.addWidget(QLabel("label 3"))
-        layout.addWidget(QPushButton("label 3"))
-
-        menu = QMenuBar()
-        menu_1 = QMenu("1", menu)
-        menu_2 = QMenu("2", menu)
-        menu_3 = QMenu("3", menu)
-
-        menu_1_action_1 = QAction("1")
-        menu_1_action_2 = QAction("2")
-        menu_2_action_1 = QAction("1")
-        menu_2_action_2 = QAction("2")
-        menu_3_action_1 = QAction("1")
-        menu_3_action_2 = QAction("2")
-
-        menu_1.addAction(menu_1_action_1)
-        menu_1.addAction(menu_1_action_2)
-
-        menu_2.addAction(menu_2_action_1)
-        menu_2.addAction(menu_2_action_2)
-
-        menu_3.addAction(menu_3_action_1)
-        menu_3.addAction(menu_3_action_2)
+        self.main_layout.addWidget(label1)
+        self.main_layout.addWidget(QLabel("label 2"))
+        self.main_layout.addWidget(QLabel("label 3"))
+        self.main_layout.addWidget(QPushButton("label 3"))
+   
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
-        title_bar = CustomTitleBar(root=self)
+        self.title_bar = CustomTitleBar(root=self)
+
+        test_menu = QMenu("test", self)
+        hello_action = test_menu.addAction("hello")
+        bye_action = test_menu.addAction("bye")
+        hello_action.triggered.connect(self.hello_action)
+        bye_action.triggered.connect(lambda: print("bye!!"))
+        self.title_bar.add_menu_item(test_menu)
+
+        second_menu = QMenu("2nd")
+        new_action = QAction()
+
+    def hello_action(self):
+        print("hello action called")
+        self.main_layout.addWidget(QLabel("label 3"))
 
 
-class CustomTitleBar(UtilityMixIn, QWidget):
 
-    def __init__(self, root):
+class CustomTitleBar(QWidget):
+
+    def __init__(self, root: QMainWindow | QWidget):
         super().__init__()
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.setContentsMargins(0, 0, 0, 0)
@@ -176,6 +182,7 @@ class CustomTitleBar(UtilityMixIn, QWidget):
             normal_btn_default_img_path="icons/max-btn-default.svg",
             normal_btn_hover_img_path="icons/normal-btn-hover.svg",
             disabled_btn_img_path="icons/disabled-btn.svg",
+            
         )
         title_btns.setVisible(True)
         title_bar_layout.addWidget(title_btns)
@@ -184,9 +191,9 @@ class CustomTitleBar(UtilityMixIn, QWidget):
         title_text.setVisible(True)
         title_bar_layout.addWidget(title_text)
 
-        menu_bar = TitleMenuBar(parent=self)
-        menu_bar.setVisible(True)
-        title_bar_menu_layout.addWidget(menu_bar)
+        self.menu_bar = TitleMenuBar()
+        self.menu_bar.setVisible(True)
+        title_bar_menu_layout.addWidget(self.menu_bar)
 
         """Update root's central widget to be the CustomTitleBar"""
 
@@ -204,14 +211,24 @@ class CustomTitleBar(UtilityMixIn, QWidget):
             root.layout().setSpacing(0)
             root.layout().setContentsMargins(0, 0, 0, 0)
 
+    # def update_root_widgets_add_methods(self):
+    #     if not isinstance(self.root, QMainWindow):
+    #         # override layout.addX() methods
+    #         ...
+    #         def new_add_widget_method(widget):
+
+
+
     def get_root_content(self):
         def get_widget_content(source_layout, new_layout):
             while source_layout.count():
                 item = source_layout.takeAt(0)
+                print(item.layout())
                 if item.widget():
                     new_layout.addWidget(item.widget())
                 elif item.layout():
                     nested_layout = item.layout()
+                    print(nested_layout)
                     new_layout.addLayout(nested_layout)
                     get_widget_content(
                         source_layout=nested_layout, new_layout=new_layout
@@ -235,6 +252,7 @@ class CustomTitleBar(UtilityMixIn, QWidget):
         container_widget.setLayout(new_layout)
         container_widget.show()
         clear_layout(source_layout)
+        # container_widget = self.root
         return container_widget
 
     def mousePressEvent(self, event: QMouseEvent) -> None:
@@ -257,6 +275,15 @@ class CustomTitleBar(UtilityMixIn, QWidget):
         self.location = None
         super().mouseReleaseEvent(event)
         event.accept()
+
+    def add_menu_item(self, menu: QMenu):
+        """
+        Adds a `QMenu` to the `QMenuBar` that's inside the `TitleMenuBar` of the `CustomTitleBar`.
+
+        :param menu: The menu to be added. The menu should already have all of its actions added beforehand.
+        :type menu: QMenu
+        """
+        self.menu_bar.add_menu_item(menu=menu)
 
 
 class TitleBtns(QWidget):
@@ -330,6 +357,7 @@ class TitleBtns(QWidget):
 
         """
         super().__init__()
+
         self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.change_btns_on_hover = change_btns_on_hover
         self.change_cursor_on_btn_hover = change_cursor_on_btn_hover
@@ -377,18 +405,27 @@ class TitleBtns(QWidget):
             self.monitor_root_focus()
 
     def enterEvent(self, event):
+        """
+        Adds to the enterEvent to trigger the set_hover_icons method if change_btns_on_hover is True.
+        """
         if self.change_btns_on_hover:
-            self.set_full_icons()
+            self.set_hover_icons()
         super().enterEvent(event)
         event.accept()
 
     def leaveEvent(self, event):
+        """
+        Adds to the leaveEvent to trigger the set_default_icons method if change_btns_on_hover is True.
+        """
         if self.change_btns_on_hover:
             self.set_default_icons()
         super().leaveEvent(event)
         event.accept()
 
     def get_icons(self):
+        """
+        Initalizes the button icon attributes with either the icon file path, or a default icon if no file path is provided.
+        """
         self.icon_close_btn_default = (
             QPixmap(self.close_btn_default_img_path)
             if self.close_btn_default_img_path is not None
@@ -443,33 +480,51 @@ class TitleBtns(QWidget):
         )
 
     def set_default_icons(self):
+        """
+        Changes the buttons to have the default appearance.
+        """
         self.close_btn.setIcon(self.icon_close_btn_default)
         self.min_btn.setIcon(self.icon_min_btn_default)
         self.max_btn.setIcon(self.icon_max_btn_default)
         self.normal_btn.setIcon(self.icon_normal_btn_default)
 
-    def set_full_icons(self):
+    def set_hover_icons(self):
+        """
+        Changes the buttons to have the hover appearance.
+        """
         self.close_btn.setIcon(self.icon_close_btn_hover)
         self.min_btn.setIcon(self.icon_min_btn_hover)
         self.max_btn.setIcon(self.icon_max_btn_hover)
         self.normal_btn.setIcon(self.icon_normal_btn_hover)
 
     def set_disabled_icons(self):
+        """
+        Changes the buttons to have the disabled appearance.
+        """
         self.close_btn.setIcon(self.icon_disabled)
         self.min_btn.setIcon(self.icon_disabled)
         self.max_btn.setIcon(self.icon_disabled)
         self.normal_btn.setIcon(self.icon_disabled)
 
     def add_btn_func(self):
+        """
+        Connects the functionality to the buttons.
+        """
         self.close_btn.clicked.connect(self.root.close)
         self.max_btn.clicked.connect(self.root.showMaximized)
         self.min_btn.clicked.connect(self.root.showMinimized)
         self.normal_btn.clicked.connect(self.root.showNormal)
 
     def monitor_root_window_state_change(self):
+        """
+        Monitors for changes in the root window's state (minimized, maximized, normal). If the root's window state is maximized or normal, the `adjust_btn_display` method.
+        """
         super_change_event = self.root.changeEvent
 
         def adjust_btn_display(event):
+            """
+            Makes the normal button hidden and the maximize button visible if the root's window state is normal, and makes the normal button visible and the maximize button hidden if the root's window state is maximized.
+            """
             if event.type() == QEvent.Type.WindowStateChange:
                 if self.root.windowState() == Qt.WindowState.WindowMaximized:
                     self.normal_btn.setVisible(True)
@@ -484,7 +539,13 @@ class TitleBtns(QWidget):
         self.root.changeEvent = adjust_btn_display
 
     def monitor_root_focus(self):
+        """
+        Monitor's root window's focus (at the application level) to call the `focus_change` method when the focus changes.
+        """
         def focus_change(_, new):
+            """
+            If the focus is changed such that the app is not in focus, the disabled icons are set. Else, the default icons are set.
+            """
             if new is None:
                 self.set_disabled_icons()
 
@@ -545,50 +606,101 @@ class TitleText(QLabel):
 class TitleMenuBar(QMenuBar):
     def __init__(
         self,
-        parent,
-        menu_bar_border="0px solid black",
-        menu_bar_bg_color="",
-        menu_bar_border_radius="0px",
-        menu_bar_padding="0px",
-        menu_bar_font="arial",
-        menu_bar_font_color="#fff",
-        menu_bar_font_size="14px",
-        menu_bar_additional_qss="",
+        menu_bar_border: Optional[str] = "0px solid black",
+        menu_bar_bg_color: Optional[str] = "",
+        menu_bar_border_radius: Optional[str] = "0px",
+        menu_bar_padding: Optional[str] = "0px",
+        menu_bar_font: Optional[str] = "arial",
+        menu_bar_font_color: Optional[str] = "#fff",
+        menu_bar_font_size: Optional[str] = "14px",
+        menu_bar_additional_qss: Optional[str] = "",
 
-        menu_bar_item_bg_color="",
-        menu_bar_item_additional_qss="",
+        menu_bar_item_bg_color: Optional[str] = "",
+        menu_bar_item_additional_qss: Optional[str] = "",
         
-        menu_bar_item_hover_bg_color="",
-        menu_bar_item_hover_additional_qss="",
+        menu_bar_item_hover_bg_color: Optional[str] = "",
+        menu_bar_item_hover_additional_qss: Optional[str] = "",
 
-        menu_bar_dropdown_additional_qss="",
-        menu_bar_dropdown_font="arial",
-        menu_bar_dropdown_item_padding="3px 10px",
-        menu_bar_dropdown_item_bg_color="",
-        menu_bar_dropdown_item_text_color="",
-        menu_bar_dropdown_item_additional_qss="",
+        menu_bar_dropdown_additional_qss: Optional[str] = "",
 
-        menu_bar_dropdown_item_hover_bg_color="",
-        menu_bar_dropdown_item_hover_additional_qss="",
+        menu_bar_dropdown_font: Optional[str] = None,
+        menu_bar_dropdown_item_padding: Optional[str] = "3px 10px",
+        menu_bar_dropdown_item_bg_color: Optional[str] = "",
+        menu_bar_dropdown_item_additional_qss: Optional[str] = "",
+
+        menu_bar_dropdown_item_hover_bg_color: Optional[str] = "",
+        menu_bar_dropdown_item_hover_additional_qss: Optional[str] = "",
     ):
+        """
+        Creates a default menu bar for the `CustomTitleBar` which can be used to add menu items and actions with the `add_menu_item` method.
+
+        :param menu_bar_border: The border of the menu bar. Defaults to "0px solid black".
+        :type menu_bar_border: Optional[str]
+        :param menu_bar_bg_color: The background color of the menu bar. Defaults to "".
+        :type menu_bar_bg_color: Optional[str]
+        :param menu_bar_border_radius: The border radius of the menu bar. Defaults to "0px".
+        :type menu_bar_border_radius: Optional[str]
+        :param menu_bar_padding: The padding (space between border and content) of the menu bar. Defaults to "0px".
+        :type menu_bar_padding: Optional[str]
+        :param menu_bar_font: The font family of the menu bar. Defaults to "arial".
+        :type menu_bar_font: Optional[str]
+        :param menu_bar_font_color: The font color of menu bar text. Defaults to "#fff".
+        :type menu_bar_font_color: Optional[str]
+        :param menu_bar_font_size: The font size of the menu bar. Defaults to "14px".
+        :type menu_bar_font_size: Optional[str]
+        :param menu_bar_additional_qss: Any additional QSS for the menu bar. Defaults to "".
+        :type menu_bar_additional_qss: Optional[str]
+
+        :param menu_bar_item_bg_color: The background color of the menu bar items (the menus). Defaults to "".
+        :type menu_bar_item_bg_color: Optional[str]
+        :param menu_bar_item_additional_qss: Additional QSS for the menu bar items (the menus). Defaults to "".
+        :type menu_bar_item_additional_qss: Optional[str]
+        
+        :param menu_bar_item_hover_bg_color: The background hover color of menu bar items (the menus). Defaults to "".
+        :type menu_bar_item_hover_bg_color: Optional[str]
+        :param menu_bar_item_hover_bg_color: The background hover color of menu bar items (the menus). Defaults to "".
+        :param menu_bar_item_hover_additional_qss: Additional QSS for menu bar items hover. Defaults to "".
+        :type menu_bar_item_hover_additional_qss: Optional[str]
+
+        :param menu_bar_dropdown_font: The font family for the dropdowns of the menus. Defaults to the same font as `menu_bar_font`.
+        :type menu_bar_dropdown_font: Optional[str].
+        :param menu_bar_dropdown_additional_qss: Additional QSS for the actual dropdown area of the menu items. Defaults to "".
+        :type menu_bar_dropdown_additional_qss: Optional[str]
+
+        :param menu_bar_dropdown_item_padding: The padding for the dropdown items. Defaults to "3px 10px".
+        :type menu_bar_dropdown_item_padding: Optional[str]
+        :param menu_bar_dropdown_item_bg_color: The background color for the dropdown items. Defaults to "".
+        :type menu_bar_dropdown_item_bg_color: Optional[str]
+        :param menu_bar_dropdown_item_additional_qss: Additional QSS for the dropdown items. Defaults to ".
+        :type menu_bar_dropdown_item_additional_qss: Optional[str]
+
+        :param menu_bar_dropdown_item_hover_bg_color: The background color of the dropdown items upon hover. Defaults to "".
+        :type menu_bar_dropdown_item_hover_bg_color: Optional[str]
+        :param menu_bar_dropdown_item_hover_additional_qss: Additional QSS for the dropdown items upon hover. Defaults to "".
+        :type menu_bar_dropdown_item_hover_additional_qss: Optional[str]
+
+        """
         super().__init__()
-        self.parent = parent
+
+        if menu_bar_dropdown_font is None:
+            menu_bar_dropdown_font = menu_bar_font
 
         # Menu bar
-        menu = self
+        self.menu = self
+        self.menu.setNativeMenuBar(False)
 
-        file_menu = QMenu("File", menu)
-        file_menu.addAction("Open")
-        file_menu.addAction("Save")
-        menu.addMenu(file_menu)
-        menu.setNativeMenuBar(False)
+        # file_menu = QMenu("File", self.menu)
+        # file_menu.addAction("Open")
+        # file_menu.addAction("Save")
+        # self.menu.addMenu(file_menu)
+        # self.menu.setNativeMenuBar(False)
 
-        edit_menu = QMenu("Edit", menu)
-        edit_menu.addAction("Open")
-        edit_menu.addAction("Save")
-        menu.addMenu(edit_menu)
+        # edit_menu = QMenu("Edit", self.menu)
+        # edit_menu.addAction("Open")
+        # edit_menu.addAction("Save")
+        # self.menu.addMenu(edit_menu)
 
-        menu.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.menu.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
         self.setStyleSheet(
             # Main bar
             f"""QMenuBar {{ 
@@ -624,7 +736,6 @@ class TitleMenuBar(QMenuBar):
             f"""QMenu::item {{
                     padding: {menu_bar_dropdown_item_padding};
                     background-color: {menu_bar_dropdown_item_bg_color};
-                    color: {menu_bar_dropdown_item_text_color};
                     {menu_bar_dropdown_item_additional_qss}
             }}"""
             # Sub menu's dropdown's items hover
@@ -634,10 +745,24 @@ class TitleMenuBar(QMenuBar):
             }}"""
         )
 
+    def add_menu_item(self, menu: QMenu):
+        self.menu.addMenu(menu)
 
+
+
+
+        # file_menu = QMenu("File", menu)
+        # file_menu.addAction("Open")
+        # file_menu.addAction("Save")
+        # menu.addMenu(file_menu)
+
+        # edit_menu = QMenu("Edit", menu)
+        # edit_menu.addAction("Open")
+        # edit_menu.addAction("Save")
+        # menu.addMenu(edit_menu)
 
 app = QApplication()
-# root = MainWindowWidget()
-root = MainWindow()
+root = MainWindowWidget()
+# root = MainWindow()
 root.show()
 app.exec()
