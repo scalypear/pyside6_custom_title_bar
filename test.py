@@ -19,21 +19,26 @@ from typing import Optional
 
 
 class MainWindow(QMainWindow):
+    """
+    Example of an app which uses a QMainWindow as its root, using the CustomTitleBar.
+
+    **Important**: The central widget holds a QVBoxLayout which holds the title bar *and* a nested layout for the content (this nested layout allows you to add back in content margins that otherwise would be removed if you just put the content directly onto the central widget layout).
+    """
     def __init__(self):
         super().__init__()
 
-        # Central widget holds a layout which holds the titlebar + a nested layout for the content (this nested layout allows you to add back in content margins that otherwise would be removed if you just put the content directly onto the central_widget_layout)
         central_widget = QWidget()
+        self.setCentralWidget(central_widget)
         central_widget_layout = QVBoxLayout(central_widget)
         central_widget.setLayout(central_widget_layout)
 
         content_layout = QVBoxLayout()
-        content_layout.setContentsMargins(10, 10, 10, 10)
+        content_layout.setContentsMargins(10, 10, 10, 10) # Adding back contents margins as we see fit
 
         central_widget_layout.addWidget(CustomTitleBar(root=self))
         central_widget_layout.addLayout(content_layout)
-        self.setCentralWidget(central_widget)
 
+        """Example content (not required)"""
         layout_1 = QHBoxLayout()
         layout_2 = QHBoxLayout()
         layout_3 = QVBoxLayout()
@@ -55,19 +60,42 @@ class MainWindow(QMainWindow):
 
 
 class MainWindowWidget(QWidget):
+    """ 
+    Example of an app which uses a QWidget as its root, using the CustomTitleBar.
+
+    **Important**: For this to work, we need to mimic the structure of a QMainWindow. The structure MUST be as follows:
+    1) A container layout: This will be used to hold a QWidget that will act as our 'central widget'.
+    2) A QWidget: This is our 'central widget'; it should be added directly to the container layout.
+    3) A QVBoxLayout: This is the layout that will hold the CustomTitleBar, followed by another layout that will hold the app content; it should be added directly to the QWidget.
+    4) The CustomTitleBar: This should be added to the QVBoxLayout if you want the title bar to be at the top of your app.
+    5) A content layout: This layout will hold all of the content of your app (i.e., all of the stuff that isn't the title bar). The reason we have this layout instead of directly placing the content on the QVBoxLayout below the CustomTitleBar is because it allows us to add back in contents margins. (Contents margins on the container layout and the QVBoxLayout are removed by the CustomTitleBar to prevent weird spacing occuring around the CustomTitleBar widget).
+
+    """
     def __init__(self):
         super().__init__()
 
-        main_layout = QVBoxLayout(self)
-        self.setLayout(main_layout)
+        """Required structure"""
+        container_layout = QVBoxLayout()
 
+        central_widget = QWidget(self)
+        container_layout.addWidget(central_widget)
+
+        central_widget_layout = QVBoxLayout(central_widget)
+        central_widget.setLayout(central_widget_layout)
+
+        content_layout = QVBoxLayout()
+        content_layout.setContentsMargins(10, 10, 10, 10) # Adding back contents margins as we see fit
+
+        central_widget_layout.addWidget(CustomTitleBar(root=self))
+        central_widget_layout.addLayout(content_layout)
+        
+        """Example content (not required)"""
         layout_1 = QHBoxLayout()
         layout_2 = QHBoxLayout()
         layout_3 = QVBoxLayout()
-        main_layout.addWidget(CustomTitleBar(root=self))
-        main_layout.addLayout(layout_1)
-        main_layout.addLayout(layout_2)
-        main_layout.addLayout(layout_3)
+        content_layout.addLayout(layout_1)
+        content_layout.addLayout(layout_2)
+        content_layout.addLayout(layout_3)
 
         layout_1.addWidget(QLabel("Label 1"))
         layout_1.addWidget(QLabel("Label 2"))
@@ -83,33 +111,45 @@ class MainWindowWidget(QWidget):
 
 
 class CustomTitleBar(QWidget):
-
-    def __init__(self, root):
+    def __init__(self, root, root_bg_color=None):
         super().__init__()
         self.root = root
+        self.root_bg_color = root_bg_color
 
-        if not root.centralWidget():
-            self.check_central_widget(root)
+        if isinstance(root, QMainWindow):
+            self.is_QMainWindow = True
+            if not root.centralWidget():
+                self.check_central_widget(root)
+            else:
+                self.central_layout_or_widget = root.centralWidget()
+                self.initialize(root=root, root_bg_color=self.root_bg_color)
         else:
-            self.initialize(root)
+            self.is_QMainWindow = False
+            if not root.layout():
+                self.check_main_layout(root)
+            else:
+                root.setContentsMargins(0,0,0,0)
+                root.layout().setContentsMargins(0,0,0,0)
+                self.central_layout_or_widget = root.layout().itemAt(0).widget()
+                self.initialize(root=root, root_bg_color=self.root_bg_color)
 
     # Init content
-    def initialize(self, root):
+    def initialize(self, root, root_bg_color):
         root_central_widget_bg_col = (
-            root.centralWidget()
-            .palette()
-            .color(root.centralWidget().backgroundRole())
+            self.central_layout_or_widget.palette()
+            .color(self.central_layout_or_widget.backgroundRole())
             .getRgb()
-        )
+        ) if root_bg_color is None else root_bg_color
 
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
-        root.centralWidget().setObjectName("central-widget-tag")
+        self.central_layout_or_widget.setObjectName("central-widget-tag")
 
         root.setWindowFlags(Qt.WindowType.FramelessWindowHint)
         root.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
-        root.centralWidget().layout().setContentsMargins(0, 0, 0, 0)
-        root.centralWidget().setStyleSheet(
+        self.central_layout_or_widget.layout().setContentsMargins(0, 0, 0, 0)
+        self.central_layout_or_widget.setContentsMargins(0,0,0,0)
+        self.central_layout_or_widget.setStyleSheet(
             f"#central-widget-tag {{background-color:rgba{root_central_widget_bg_col}; border-top-left-radius:12px; border-top-right-radius:12px;}}"
         )
 
@@ -196,9 +236,23 @@ class CustomTitleBar(QWidget):
 
         def new_set_central_widget(widget):
             default_set_central_widget(widget)
-            root.initialize_titlebar(root)
+            self.central_layout_or_widget = root.centralWidget()
+            root.initialize_titlebar(root=root, root_bg_color=self.root_bg_color)
 
         root.setCentralWidget = new_set_central_widget
+
+    def check_main_layout(self, root):
+        """If the topmost layout of the root has not been set yet, update root's .setLayout() to call the initialization of CustomTitleBar (this way, it doesn't matter whether the user sets the central widget before or after creating a CustomTitleBar)"""
+
+        default_set_layout = root.setLayout
+        root.initialize_titlebar = self.initialize
+
+        def new_set_layout(layout):
+            default_set_layout(layout)
+            self.central_layout_or_widget = root
+            root.initialize_titlebar(root=root, root_bg_color=self.root_bg_color)
+
+        root.setLayout = new_set_layout
 
 
 class TitleBtns(QWidget):
@@ -673,7 +727,7 @@ class TitleMenuBar(QMenuBar):
 
 
 app = QApplication()
-root = MainWindow()
-# root = MainWindowWidget()
+# root = MainWindow()
+root = MainWindowWidget()
 root.show()
 app.exec()
