@@ -24,6 +24,7 @@ class MainWindow(QMainWindow):
 
     **Important**: The central widget holds a QVBoxLayout which holds the title bar *and* a nested layout for the content (this nested layout allows you to add back in content margins that otherwise would be removed if you just put the content directly onto the central widget layout).
     """
+
     def __init__(self):
         super().__init__()
 
@@ -33,7 +34,9 @@ class MainWindow(QMainWindow):
         central_widget.setLayout(central_widget_layout)
 
         content_layout = QVBoxLayout()
-        content_layout.setContentsMargins(10, 10, 10, 10) # Adding back contents margins as we see fit
+        content_layout.setContentsMargins(
+            10, 10, 10, 10
+        )  # Adding back contents margins as we see fit
 
         central_widget_layout.addWidget(CustomTitleBar(root=self))
         central_widget_layout.addLayout(content_layout)
@@ -60,7 +63,7 @@ class MainWindow(QMainWindow):
 
 
 class MainWindowWidget(QWidget):
-    """ 
+    """
     Example of an app which uses a QWidget as its root, using the CustomTitleBar.
 
     **Important**: For this to work, we need to mimic the structure of a QMainWindow. The structure MUST be as follows:
@@ -71,11 +74,12 @@ class MainWindowWidget(QWidget):
     5) A content layout: This layout will hold all of the content of your app (i.e., all of the stuff that isn't the title bar). The reason we have this layout instead of directly placing the content on the QVBoxLayout below the CustomTitleBar is because it allows us to add back in contents margins. (Contents margins on the container layout and the QVBoxLayout are removed by the CustomTitleBar to prevent weird spacing occuring around the CustomTitleBar widget).
 
     """
+
     def __init__(self):
         super().__init__()
 
         """Required structure"""
-        container_layout = QVBoxLayout()
+        container_layout = QVBoxLayout(self)
 
         central_widget = QWidget(self)
         container_layout.addWidget(central_widget)
@@ -84,11 +88,13 @@ class MainWindowWidget(QWidget):
         central_widget.setLayout(central_widget_layout)
 
         content_layout = QVBoxLayout()
-        content_layout.setContentsMargins(10, 10, 10, 10) # Adding back contents margins as we see fit
+        content_layout.setContentsMargins(
+            10, 10, 10, 10
+        )  # Adding back contents margins as we see fit
 
         central_widget_layout.addWidget(CustomTitleBar(root=self))
         central_widget_layout.addLayout(content_layout)
-        
+
         """Example content (not required)"""
         layout_1 = QHBoxLayout()
         layout_2 = QHBoxLayout()
@@ -128,27 +134,34 @@ class CustomTitleBar(QWidget):
             if not root.layout():
                 self.check_main_layout(root)
             else:
-                root.setContentsMargins(0,0,0,0)
-                root.layout().setContentsMargins(0,0,0,0)
+                root.setContentsMargins(0, 0, 0, 0)
+                root.layout().setContentsMargins(0, 0, 0, 0)
                 self.central_layout_or_widget = root.layout().itemAt(0).widget()
                 self.initialize(root=root, root_bg_color=self.root_bg_color)
 
     # Init content
     def initialize(self, root, root_bg_color):
+
+        self.get_screen_limits()
+
         root_central_widget_bg_col = (
-            self.central_layout_or_widget.palette()
-            .color(self.central_layout_or_widget.backgroundRole())
-            .getRgb()
-        ) if root_bg_color is None else root_bg_color
+            (
+                self.central_layout_or_widget.palette()
+                .color(self.central_layout_or_widget.backgroundRole())
+                .getRgb()
+            )
+            if root_bg_color is None
+            else root_bg_color
+        )
 
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
         self.central_layout_or_widget.setObjectName("central-widget-tag")
 
-        root.setWindowFlags(Qt.WindowType.FramelessWindowHint)
+        root.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.NoDropShadowWindowHint)
         root.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         self.central_layout_or_widget.layout().setContentsMargins(0, 0, 0, 0)
-        self.central_layout_or_widget.setContentsMargins(0,0,0,0)
+        self.central_layout_or_widget.setContentsMargins(0, 0, 0, 0)
         self.central_layout_or_widget.setStyleSheet(
             f"#central-widget-tag {{background-color:rgba{root_central_widget_bg_col}; border-top-left-radius:12px; border-top-right-radius:12px;}}"
         )
@@ -206,19 +219,61 @@ class CustomTitleBar(QWidget):
         event.accept()
 
     def mouseMoveEvent(self, event: QMouseEvent) -> None:
+        self.previous_x = self.root.window().pos().x()
+        print(self.previous_x)
         if self.location is not None:
             diff = event.position().toPoint() - self.location
             new_x = self.root.window().x() + diff.x()
             new_y = self.root.window().y() + diff.y()
 
+            new_x = self.check_stick(new_x)
+
             self.root.window().move(new_x, new_y)
+
         super().mouseMoveEvent(event)
         event.accept()
+
+    def check_stick(self, new_x):
+        window_width = self.root.window().width() 
+        window_right_side = window_width + new_x
+
+
+        # Left side
+        if new_x < self.previous_x: # mouse is moving leftwards
+            if self.stick_threshold_left < new_x < self.screen_geo_left:
+                new_x = self.screen_geo_left
+            elif new_x <= self.stick_threshold_left:
+                new_x += self.stick_threshold
+
+        
+
+
+        # Right side
+        if new_x > self.previous_x: # mouse if moving rightwards
+            if self.stick_threshold_right > window_right_side > self.screen_geo_right:
+                new_x = self.screen_geo_right - window_width
+            elif window_right_side >= self.stick_threshold_right:
+                new_x -= self.stick_threshold
+
+        return new_x   
 
     def mouseReleaseEvent(self, event: QMouseEvent) -> None:
         self.location = None
         super().mouseReleaseEvent(event)
         event.accept()
+
+    def get_screen_limits(self):
+        self.previous_x = self.root.window().pos().x()
+
+        self.screen_geo = QApplication.primaryScreen().geometry()
+        self.screen_geo_left = self.screen_geo.left()
+        self.screen_geo_right = self.screen_geo.right()
+        self.screen_geo_top = self.screen_geo.top()
+        self.screen_geo_bottom = self.screen_geo.bottom()
+
+        self.stick_threshold = 30
+        self.stick_threshold_left = -1 * self.stick_threshold
+        self.stick_threshold_right = self.stick_threshold + self.screen_geo_right
 
     def add_menu_item(self, menu: QMenu):
         """
