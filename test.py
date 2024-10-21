@@ -92,23 +92,35 @@ class MainWindowWidget(QWidget):
             10, 10, 10, 10
         )  # Adding back contents margins as we see fit
 
-        central_widget_layout.addWidget(
-            CustomTitleBar(
-                root=self,
-                change_btns_on_hover=True,
-                close_btn_default_img_path="icons/close-btn-default.svg",
-                close_btn_hover_img_path="icons/close-btn-hover.svg",
-                min_btn_default_img_path="icons/min-btn-default.svg",
-                min_btn_hover_img_path="icons/min-btn-hover.svg",
-                max_btn_default_img_path="icons/max-btn-default.svg",
-                max_btn_hover_img_path="icons/max-btn-hover.svg",
-                normal_btn_default_img_path="icons/max-btn-default.svg",
-                normal_btn_hover_img_path="icons/normal-btn-hover.svg",
-                disabled_btn_img_path="icons/disabled-btn.svg",
-                title_bar_text_title_text="Title text",
-            )
+        title_bar = CustomTitleBar(
+            root=self,
+            change_btns_on_hover=True,
+            close_btn_default_img_path="icons/close-btn-default.svg",
+            close_btn_hover_img_path="icons/close-btn-hover.svg",
+            min_btn_default_img_path="icons/min-btn-default.svg",
+            min_btn_hover_img_path="icons/min-btn-hover.svg",
+            max_btn_default_img_path="icons/max-btn-default.svg",
+            max_btn_hover_img_path="icons/max-btn-hover.svg",
+            normal_btn_default_img_path="icons/max-btn-default.svg",
+            normal_btn_hover_img_path="icons/normal-btn-hover.svg",
+            disabled_btn_img_path="icons/disabled-btn.svg",
+            title_bar_text_title_text="Title text",
         )
+        central_widget_layout.addWidget(title_bar)
         central_widget_layout.addLayout(content_layout)
+
+        """Adding menu bar items"""
+        example_menu_1 = QMenu("Ex 1")
+        example_action_1 = example_menu_1.addAction("Action 1")
+        example_action_1.triggered.connect(lambda: print("example action 1"))
+        example_action_2 = example_menu_1.addAction("Action 2")
+        example_action_2.triggered.connect(lambda: print("example action 2"))
+
+        example_menu_2 = QMenu("Ex 2")
+        example_action_2 = example_menu_2.addAction("Action 2")
+        example_action_2.triggered.connect(lambda: print("example action 2"))
+
+        title_bar.add_menu_item(example_menu_1)
 
         """Example content (not required)"""
         layout_1 = QHBoxLayout()
@@ -133,10 +145,10 @@ class MainWindowWidget(QWidget):
 
 class CustomTitleBar(QWidget):
     """
-    Implements a custom title bar which automatically replaces default title bar of a `QWidget` or `QMainWindow`. `CustomTitleBar` should be placed in the central widget of the root. 
-    
-    If the root is a `QMainWindow`, simply place `CustomTitleBar` as the first item in the `centralWidget`. 
-    
+    Implements a custom title bar which automatically replaces default title bar of a `QWidget` or `QMainWindow`. `CustomTitleBar` should be placed in the central widget of the root.
+
+    If the root is a `QMainWindow`, simply place `CustomTitleBar` as the first item in the `centralWidget`.
+
     If the root is a `QWidget`, place a layout, then a central widget in that layout, then place a vertical layout in the central widget, then place the the `CustomTitleBar`, then after that, place a layout which holds all of your app's other content (this is important because it will allow you to add back in contents margins that have to be removed from the higher level elements).
 
     Parameters
@@ -147,7 +159,7 @@ class CustomTitleBar(QWidget):
     :param root: The root window whose title bar is being replaced.
     :type root: QWidget | QMainWindow
 
-    :param root_bg_color: The background color of the root (parent) widget. Defaults to the detected root background color. 
+    :param root_bg_color: The background color of the root (parent) widget. Defaults to the detected root background color.
     :type root_bg_color: Optional[str]
 
     :param title_bar_bg_color: The background color of the title bar section. Defaults to `""`.
@@ -158,7 +170,7 @@ class CustomTitleBar(QWidget):
 
     :param root_border_radius: The pixel about of bevel (rounding) of the window. Defaults to `10`.
     :type root_border_radius: Optional[int]
-    
+
     :param title_bar_bottom_padding: The padding (in pixels) at the bottom of the title bar. Defaults to `0`.
     :type title_bar_bottom_padding: Optional[int]
 
@@ -225,6 +237,7 @@ class CustomTitleBar(QWidget):
     ----------------------
 
     """
+
     def __init__(
         self,
         root: QWidget | QMainWindow,
@@ -455,7 +468,7 @@ class CustomTitleBar(QWidget):
             )
         )
 
-        title_menu = TitleMenuBar(
+        self.menu_bar = TitleMenuBar(
             menu_bar_border=self.menu_bar_border,
             menu_bar_bg_color=self.menu_bar_bg_color,
             menu_bar_border_radius=self.menu_bar_border_radius,
@@ -476,14 +489,20 @@ class CustomTitleBar(QWidget):
             menu_bar_dropdown_item_hover_bg_color=self.menu_bar_dropdown_item_hover_bg_color,
             menu_bar_dropdown_item_hover_additional_qss=self.menu_bar_dropdown_item_hover_additional_qss,
         )
-        container_layout.addWidget(title_menu)
+        container_layout.addWidget(self.menu_bar)
 
     def mousePressEvent(self, event: QMouseEvent) -> None:
         if event.button() == Qt.MouseButton.LeftButton:
             self.location = event.position().toPoint()
             cur_x = self.root.window().x()
-            self.starts_off_screen_left = True if cur_x < self.screen_geo_left else False
-            self.starts_off_screen_right = True if (cur_x + self.root.window().width()) > self.screen_geo_right else False
+            self.starts_off_screen_left = (
+                True if cur_x < self.screen_geo_left else False
+            )
+            self.starts_off_screen_right = (
+                True
+                if (cur_x + self.root.window().width()) > self.screen_geo_right
+                else False
+            )
 
         super().mousePressEvent(event)
         event.accept()
@@ -496,18 +515,24 @@ class CustomTitleBar(QWidget):
             cur_x = self.root.window().x()
             if (cur_x > self.screen_geo_left) and self.starts_off_screen_left:
                 self.starts_off_screen_left = False
-            elif ((cur_x + self.root.window().width()) < self.screen_geo_right) and self.starts_off_screen_right:
+            elif (
+                (cur_x + self.root.window().width()) < self.screen_geo_right
+            ) and self.starts_off_screen_right:
                 self.starts_off_screen_right = False
 
             diff = event.position().toPoint() - self.location
             new_x = cur_x + diff.x()
             new_y = self.root.window().y() + diff.y()
 
-            if (self.stick_to_sides) and (not self.starts_off_screen_left) and (not self.starts_off_screen_right):
+            if (
+                (self.stick_to_sides)
+                and (not self.starts_off_screen_left)
+                and (not self.starts_off_screen_right)
+            ):
                 new_x = self._check_stick(new_x)
 
             self.root.window().move(new_x, new_y)
-        
+
         super().mouseMoveEvent(event)
         event.accept()
 
@@ -985,16 +1010,16 @@ class TitleMenuBar(QMenuBar):
         self.menu = self
         self.menu.setNativeMenuBar(False)
 
-        file_menu = QMenu("File", self.menu)
-        file_menu.addAction("Open")
-        file_menu.addAction("Save")
-        self.menu.addMenu(file_menu)
-        self.menu.setNativeMenuBar(False)
+        # file_menu = QMenu("File", self.menu)
+        # file_menu.addAction("Open")
+        # file_menu.addAction("Save")
+        # self.menu.addMenu(file_menu)
+        # self.menu.setNativeMenuBar(False)
 
-        edit_menu = QMenu("Edit", self.menu)
-        edit_menu.addAction("Open")
-        edit_menu.addAction("Save")
-        self.menu.addMenu(edit_menu)
+        # edit_menu = QMenu("Edit", self.menu)
+        # edit_menu.addAction("Open")
+        # edit_menu.addAction("Save")
+        # self.menu.addMenu(edit_menu)
 
         self.menu.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
         self.setStyleSheet(
@@ -1044,17 +1069,13 @@ class TitleMenuBar(QMenuBar):
         self.setVisible(True)
 
     def add_menu_item(self, menu: QMenu):
+        """Adds `QMenu` to the `CustomTitleBar`'s `QMenuBar`."""
         self.menu.addMenu(menu)
 
-        # file_menu = QMenu("File", menu)
-        # file_menu.addAction("Open")
-        # file_menu.addAction("Save")
-        # menu.addMenu(file_menu)
+    def return_menu_bar(self):
+        """Gives access to the menu bar."""
+        return self.menu
 
-        # edit_menu = QMenu("Edit", menu)
-        # edit_menu.addAction("Open")
-        # edit_menu.addAction("Save")
-        # menu.addMenu(edit_menu)
 
 
 app = QApplication()
