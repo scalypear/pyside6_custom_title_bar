@@ -1,7 +1,8 @@
 # CustomTitleBar
 Implements a custom title bar which automatically replaces default title bar of a `QWidget` or `QMainWindow`. `CustomTitleBar` should be placed in the central widget of the root.
 
-### Using CustomTitleBar in a QMainWindow
+
+## Using CustomTitleBar in a QMainWindow
 If the root is a `QMainWindow`, simply place `CustomTitleBar` as the first item in the `centralWidget`. The main content should be placed in a layout placed in a layout below the CustomTitleBar. So the structure will be:
 - QMainWindow: 
   - centralWidget:
@@ -12,8 +13,7 @@ If the root is a `QMainWindow`, simply place `CustomTitleBar` as the first item 
 
 For example, see [`customtitlebar_example_qmainwindow.py`](examples/customtitlebar_example_qmainwindow.py) or see [below](#example-qmainwindow). 
 
-
-### Using CustomTitleBar in a QWidget
+## Using CustomTitleBar in a QWidget
 If the root is a `QWidget`, place a layout, then a central widget in that layout, then place a vertical layout in the central widget, then place the the `CustomTitleBar`, then after that, place a layout which holds all of your app's other content (this is important because it will allow you to add back in contents margins that have to be removed from the higher level elements). So they structure will be:
 
 - QWidget:
@@ -26,9 +26,10 @@ If the root is a `QWidget`, place a layout, then a central widget in that layout
 
 For example, see [`customtitlebar_example_qwidget.py`](examples/customtitlebar_example_qwidget.py) or see [below](#example-qwidget).
 
-## Examples
 
-### Example: QMainWindow
+# Examples
+
+## Example: QMainWindow
 ```
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -97,7 +98,7 @@ class MainWindow(QMainWindow):
         layout_3.addWidget(QPushButton("Btn 2"))
         layout_3.addWidget(QPushButton("Btn 3"))
 ```
-### Example: QWidget
+## Example: QWidget
 ```
 class MainWindowWidget(QWidget):
     def __init__(self):
