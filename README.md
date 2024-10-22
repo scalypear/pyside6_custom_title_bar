@@ -1,6 +1,8 @@
 # CustomTitleBar
 Implements a custom title bar which automatically replaces default title bar of a `QWidget` or `QMainWindow`. `CustomTitleBar` should be placed in the central widget of the root.
 
+The CustomTitleBar allows you to style the title bar of your PySide6 application. 
+
 
 ## Using CustomTitleBar in a QMainWindow
 If the root is a `QMainWindow`, simply place `CustomTitleBar` as the first item in the `centralWidget`. The main content should be placed in a layout placed in a layout below the CustomTitleBar. So the structure will be:
