@@ -3,7 +3,6 @@ Implements a custom title bar which automatically replaces default title bar of 
 
 ### Using CustomTitleBar in a QMainWindow
 If the root is a `QMainWindow`, simply place `CustomTitleBar` as the first item in the `centralWidget`. The main content should be placed in a layout placed in a layout below the CustomTitleBar. So the structure will be:
-
 - QMainWindow: 
   - centralWidget:
     - centralWidget layout:
@@ -15,7 +14,15 @@ For example, see [`customtitlebar_example_qmainwindow.py`](examples/customtitleb
 
 
 ### Using CustomTitleBar in a QWidget
-If the root is a `QWidget`, place a layout, then a central widget in that layout, then place a vertical layout in the central widget, then place the the `CustomTitleBar`, then after that, place a layout which holds all of your app's other content (this is important because it will allow you to add back in contents margins that have to be removed from the higher level elements). 
+If the root is a `QWidget`, place a layout, then a central widget in that layout, then place a vertical layout in the central widget, then place the the `CustomTitleBar`, then after that, place a layout which holds all of your app's other content (this is important because it will allow you to add back in contents margins that have to be removed from the higher level elements). So they structure will be:
+
+- QWidget:
+  - Container layout:
+    - QWidget (i.e., acts as the central widget):
+      - QVBoxLayout:
+        - CustomTitleBar widget
+        - Content layout (add contents margins here):
+          - App content
 
 For example, see [`customtitlebar_example_qwidget.py`](examples/customtitlebar_example_qwidget.py) or see [below](#example-qwidget).
 
@@ -24,12 +31,6 @@ For example, see [`customtitlebar_example_qwidget.py`](examples/customtitlebar_e
 ### Example: QMainWindow
 ```
 class MainWindow(QMainWindow):
-    """
-    Example of an app which uses a QMainWindow as its root, using the CustomTitleBar.
-
-    **Important**: The central widget holds a QVBoxLayout which holds the title bar *and* a nested layout for the content (this nested layout allows you to add back in content margins that otherwise would be removed if you just put the content directly onto the central widget layout).
-    """
-
     def __init__(self):
         super().__init__()
         self.resize(400,400)
@@ -99,18 +100,6 @@ class MainWindow(QMainWindow):
 ### Example: QWidget
 ```
 class MainWindowWidget(QWidget):
-    """
-    Example of an app which uses a QWidget as its root, using the CustomTitleBar.
-
-    **Important**: For this to work, we need to mimic the structure of a QMainWindow. The structure MUST be as follows:
-    1) A container layout: This will be used to hold a QWidget that will act as our 'central widget'.
-    2) A QWidget: This is our 'central widget'; it should be added directly to the container layout.
-    3) A QVBoxLayout: This is the layout that will hold the CustomTitleBar, followed by another layout that will hold the app content; it should be added directly to the QWidget.
-    4) The CustomTitleBar: This should be added to the QVBoxLayout if you want the title bar to be at the top of your app.
-    5) A content layout: This layout will hold all of the content of your app (i.e., all of the stuff that isn't the title bar). The reason we have this layout instead of directly placing the content on the QVBoxLayout below the CustomTitleBar is because it allows us to add back in contents margins. (Contents margins on the container layout and the QVBoxLayout are removed by the CustomTitleBar to prevent weird spacing occuring around the CustomTitleBar widget).
-
-    """
-
     def __init__(self):
         super().__init__()
 
