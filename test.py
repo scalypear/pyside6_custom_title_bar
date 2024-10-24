@@ -1078,6 +1078,8 @@ class TitleMenuBar(QMenuBar):
 
 
 
+
+
 app = QApplication()
 # root = MainWindow()
 root = MainWindowWidget()
