@@ -4,143 +4,16 @@ from PySide6.QtWidgets import (
     QApplication,
     QHBoxLayout,
     QLabel,
-    QPushButton,
     QVBoxLayout,
     QSizePolicy,
     QToolButton,
     QStyle,
     QMenuBar,
     QMenu,
-    QBoxLayout,
 )
-from PySide6.QtCore import Qt, QEvent, QObject, Signal
-from PySide6.QtGui import QMouseEvent, QPixmap, QPalette, QAction, QColor
+from PySide6.QtCore import Qt, QEvent
+from PySide6.QtGui import QMouseEvent, QPixmap
 from typing import Optional
-
-
-class MainWindow(QMainWindow):
-    """
-    Example of an app which uses a QMainWindow as its root, using the CustomTitleBar.
-
-    **Important**: The central widget holds a QVBoxLayout which holds the title bar *and* a nested layout for the content (this nested layout allows you to add back in content margins that otherwise would be removed if you just put the content directly onto the central widget layout).
-    """
-
-    def __init__(self):
-        super().__init__()
-
-        central_widget = QWidget()
-        self.setCentralWidget(central_widget)
-        central_widget_layout = QVBoxLayout(central_widget)
-        central_widget.setLayout(central_widget_layout)
-
-        content_layout = QVBoxLayout()
-        content_layout.setContentsMargins(
-            10, 10, 10, 10
-        )  # Adding back contents margins as we see fit
-
-        central_widget_layout.addWidget(CustomTitleBar(root=self))
-        central_widget_layout.addLayout(content_layout)
-
-        """Example content (not required)"""
-        layout_1 = QHBoxLayout()
-        layout_2 = QHBoxLayout()
-        layout_3 = QVBoxLayout()
-        content_layout.addLayout(layout_1)
-        content_layout.addLayout(layout_2)
-        content_layout.addLayout(layout_3)
-
-        layout_1.addWidget(QLabel("Label 1"))
-        layout_1.addWidget(QLabel("Label 2"))
-        layout_1.addWidget(QLabel("Label 3"))
-
-        layout_2.addWidget(QLabel("Label 4"))
-        layout_2.addWidget(QLabel("Label 5"))
-        layout_2.addWidget(QLabel("Label 6"))
-
-        layout_3.addWidget(QPushButton("Btn 1"))
-        layout_3.addWidget(QPushButton("Btn 2"))
-        layout_3.addWidget(QPushButton("Btn 3"))
-
-
-class MainWindowWidget(QWidget):
-    """
-    Example of an app which uses a QWidget as its root, using the CustomTitleBar.
-
-    **Important**: For this to work, we need to mimic the structure of a QMainWindow. The structure MUST be as follows:
-    1) A container layout: This will be used to hold a QWidget that will act as our 'central widget'.
-    2) A QWidget: This is our 'central widget'; it should be added directly to the container layout.
-    3) A QVBoxLayout: This is the layout that will hold the CustomTitleBar, followed by another layout that will hold the app content; it should be added directly to the QWidget.
-    4) The CustomTitleBar: This should be added to the QVBoxLayout if you want the title bar to be at the top of your app.
-    5) A content layout: This layout will hold all of the content of your app (i.e., all of the stuff that isn't the title bar). The reason we have this layout instead of directly placing the content on the QVBoxLayout below the CustomTitleBar is because it allows us to add back in contents margins. (Contents margins on the container layout and the QVBoxLayout are removed by the CustomTitleBar to prevent weird spacing occuring around the CustomTitleBar widget).
-
-    """
-
-    def __init__(self):
-        super().__init__()
-
-        """Required structure"""
-        container_layout = QVBoxLayout(self)
-
-        central_widget = QWidget(self)
-        container_layout.addWidget(central_widget)
-
-        central_widget_layout = QVBoxLayout(central_widget)
-        central_widget.setLayout(central_widget_layout)
-
-        content_layout = QVBoxLayout()
-        content_layout.setContentsMargins(
-            10, 10, 10, 10
-        )  # Adding back contents margins as we see fit
-
-        title_bar = CustomTitleBar(
-            root=self,
-            change_btns_on_hover=True,
-            close_btn_default_img_path="icons/close-btn-default.svg",
-            close_btn_hover_img_path="icons/close-btn-hover.svg",
-            min_btn_default_img_path="icons/min-btn-default.svg",
-            min_btn_hover_img_path="icons/min-btn-hover.svg",
-            max_btn_default_img_path="icons/max-btn-default.svg",
-            max_btn_hover_img_path="icons/max-btn-hover.svg",
-            normal_btn_default_img_path="icons/max-btn-default.svg",
-            normal_btn_hover_img_path="icons/normal-btn-hover.svg",
-            disabled_btn_img_path="icons/disabled-btn.svg",
-            title_bar_text_title_text="Title text",
-        )
-        central_widget_layout.addWidget(title_bar)
-        central_widget_layout.addLayout(content_layout)
-
-        """Adding menu bar items"""
-        example_menu_1 = QMenu("Ex 1")
-        example_action_1 = example_menu_1.addAction("Action 1")
-        example_action_1.triggered.connect(lambda: print("example action 1"))
-        example_action_2 = example_menu_1.addAction("Action 2")
-        example_action_2.triggered.connect(lambda: print("example action 2"))
-
-        example_menu_2 = QMenu("Ex 2")
-        example_action_2 = example_menu_2.addAction("Action 2")
-        example_action_2.triggered.connect(lambda: print("example action 2"))
-
-        title_bar.add_menu_item(example_menu_1)
-
-        """Example content (not required)"""
-        layout_1 = QHBoxLayout()
-        layout_2 = QHBoxLayout()
-        layout_3 = QVBoxLayout()
-        content_layout.addLayout(layout_1)
-        content_layout.addLayout(layout_2)
-        content_layout.addLayout(layout_3)
-
-        layout_1.addWidget(QLabel("Label 1"))
-        layout_1.addWidget(QLabel("Label 2"))
-        layout_1.addWidget(QLabel("Label 3"))
-
-        layout_2.addWidget(QLabel("Label 4"))
-        layout_2.addWidget(QLabel("Label 5"))
-        layout_2.addWidget(QLabel("Label 6"))
-
-        layout_3.addWidget(QPushButton("Btn 1"))
-        layout_3.addWidget(QPushButton("Btn 2"))
-        layout_3.addWidget(QPushButton("Btn 3"))
 
 
 class CustomTitleBar(QWidget):
@@ -152,10 +25,10 @@ class CustomTitleBar(QWidget):
     If the root is a `QWidget`, place a layout, then a central widget in that layout, then place a vertical layout in the central widget, then place the the `CustomTitleBar`, then after that, place a layout which holds all of your app's other content (this is important because it will allow you to add back in contents margins that have to be removed from the higher level elements).
 
     Parameters
-    ==============
+    ========================
 
     Title bar parameters
-    ---------------------
+    ------------------------
     :param root: The root window whose title bar is being replaced.
     :type root: QWidget | QMainWindow
 
@@ -186,10 +59,8 @@ class CustomTitleBar(QWidget):
     :param title_bar_to_menu_bar_padding: The padding (in pixels) between the title bar and the menu bar. Defaults to `5`.
     :type title_bar_to_menu_bar_padding: Optional[int]
 
-    ------------------------------
     Title bar buttons parameters
-    ------------------------------
-
+    --------------------------------
     :param close_btn_default_img_path: Path to the image file being used for the default close button. If path is `None`, `QStyle.StandardPixmap.SP_TitleBarCloseButton` will be used. Defaults to `None`.
     :type close_btn_default_img_path: Optional[str]
 
@@ -208,7 +79,7 @@ class CustomTitleBar(QWidget):
     :param disabled_btn_image_path: Path to the image file being used for the disabled buttons. If path is `None`, `QStyle.StandardPixmap.SP_TitleBarMinButton` will be used. Defaults to `None`.
     :type disabled_btn_image_path: Optional[str]
 
-    :param btn_size: The width and height in pixels of the buttons. Defalts to `(14, 14)`
+    :param btn_size: The width and height in pixels of the buttons. Defaults to `(14, 14)`.
     :type btn_size: Optional[tuple(int, int)]
 
     :param change_btns_on_hover: Flag for whether buttons should change from default to hover variant on hover. If `True`, file paths for the hover variants must be given in addition to paths for the default variants. If `False`, only the default variants' paths must be specified. Defaults to `False`.
@@ -232,9 +103,87 @@ class CustomTitleBar(QWidget):
     :param normal_btn_hover_img_path: Path to the image file being used for the hover normal button. If path is `None`, `QStyle.StandardPixmap.SP_TitleBarNormalButton` will be used. Defaults to `None`.
     :type normal_btn_hover_img_path: Optional[str]
 
-    --------------------------
     Title bar text parameters
-    ----------------------
+    ------------------------------
+    :param title_bar_text_title_text: The text for title of the window. Defaults to `""`.
+    :type title_bar_text_title_text: Optional[str]
+
+    :param title_bar_text_bg_color: The background color for title of the window. Defaults to the same color as the title bar.
+    :type title_bar_text_bg_color: Optional[str]
+
+    :param title_bar_text_font_size: The font size for title of the window. Defaults to `"15px"`.
+    :type title_bar_text_font_size: Optional[str]
+
+    :param title_bar_text_font_color: The font color for title of the window. Defaults to `"#fff"`.
+    :type title_bar_text_font_color: Optional[str]
+
+    :param title_bar_text_font: The font for title of the window. Defaults to `"arial"`.
+    :type title_bar_text_font: Optional[str]
+
+    :param title_bar_text_font_weight: The font weight for title of the window. Defaults to `"bold"`.
+    :type title_bar_text_font_weight: Optional[str]
+
+    :param title_bar_text_additional_qss: The font weight for title of the window. Defaults to `"bold"`.
+    :type title_bar_text_additional_qss: Optional[str]
+
+    Title bar menu parameters
+    ----------------------------
+    :param menu_bar_border: The border of the menu bar. Defaults to `"0px solid black"`.
+    :type menu_bar_border: Optional[str]
+
+    :param menu_bar_bg_color: The background color of the menu bar. Defaults to `""`.
+    :type menu_bar_bg_color: Optional[str]
+
+    :param menu_bar_border_radius: The border radius of the menu bar. Defaults to `"0px"`.
+    :type menu_bar_border_radius: Optional[str]
+
+    :param menu_bar_padding: The padding (space between border and content) of the menu bar. Defaults to `"0px"`.
+    :type menu_bar_padding: Optional[str]
+
+    :param menu_bar_font: The font family of the menu bar. Defaults to `"arial"`.
+    :type menu_bar_font: Optional[str]
+
+    :param menu_bar_font_color: The font color of menu bar text. Defaults to `"#fff"`.
+    :type menu_bar_font_color: Optional[str]
+
+    :param menu_bar_font_size: The font size of the menu bar. Defaults to `"14px"`.
+    :type menu_bar_font_size: Optional[str]
+
+    :param menu_bar_additional_qss: Any additional QSS for the menu bar. Defaults to `""`.
+    :type menu_bar_additional_qss: Optional[str]
+
+    :param menu_bar_item_bg_color: The background color of the menu bar items (the menus). Defaults to `""`.
+    :type menu_bar_item_bg_color: Optional[str]
+
+    :param menu_bar_item_additional_qss: Additional QSS for the menu bar items (the menus). Defaults to `""`.
+    :type menu_bar_item_additional_qss: Optional[str]
+
+    :param menu_bar_item_hover_bg_color: The background hover color of menu bar items (the menus). Defaults to `""`.
+    :type menu_bar_item_hover_bg_color: Optional[str]
+
+    :param menu_bar_item_hover_additional_qss: Additional QSS for menu bar items hover. Defaults to `""`.
+    :type menu_bar_item_hover_additional_qss: Optional[str]
+
+    :param menu_bar_dropdown_font: The font family for the dropdowns of the menus. Defaults to the same font as `menu_bar_font`.
+    :type menu_bar_dropdown_font: Optional[str].
+
+    :param menu_bar_dropdown_additional_qss: Additional QSS for the actual dropdown area of the menu items. Defaults to `""`.
+    :type menu_bar_dropdown_additional_qss: Optional[str]
+
+    :param menu_bar_dropdown_item_padding: The padding for the dropdown items. Defaults to `"3px 10px"`.
+    :type menu_bar_dropdown_item_padding: Optional[str]
+
+    :param menu_bar_dropdown_item_bg_color: The background color for the dropdown items. Defaults to `""`.
+    :type menu_bar_dropdown_item_bg_color: Optional[str]
+
+    :param menu_bar_dropdown_item_additional_qss: Additional QSS for the dropdown items. Defaults to `""`.
+    :type menu_bar_dropdown_item_additional_qss: Optional[str]
+
+    :param menu_bar_dropdown_item_hover_bg_color: The background color of the dropdown items upon hover. Defaults to `""`.
+    :type menu_bar_dropdown_item_hover_bg_color: Optional[str]
+
+    :param menu_bar_dropdown_item_hover_additional_qss: Additional QSS for the dropdown items upon hover. Defaults to `""`.
+    :type menu_bar_dropdown_item_hover_additional_qss: Optional[str]
 
     """
 
@@ -1010,17 +959,6 @@ class TitleMenuBar(QMenuBar):
         self.menu = self
         self.menu.setNativeMenuBar(False)
 
-        # file_menu = QMenu("File", self.menu)
-        # file_menu.addAction("Open")
-        # file_menu.addAction("Save")
-        # self.menu.addMenu(file_menu)
-        # self.menu.setNativeMenuBar(False)
-
-        # edit_menu = QMenu("Edit", self.menu)
-        # edit_menu.addAction("Open")
-        # edit_menu.addAction("Save")
-        # self.menu.addMenu(edit_menu)
-
         self.menu.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
         self.setStyleSheet(
             # Main bar
@@ -1075,13 +1013,3 @@ class TitleMenuBar(QMenuBar):
     def return_menu_bar(self):
         """Gives access to the menu bar."""
         return self.menu
-
-
-
-
-
-app = QApplication()
-# root = MainWindow()
-root = MainWindowWidget()
-root.show()
-app.exec()
